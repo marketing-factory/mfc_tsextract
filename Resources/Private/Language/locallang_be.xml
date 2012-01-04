@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<T3locallang>
+	<meta type="array">
+		<type>database</type>
+		<description>Language labels for backend labels belonging to extension 'mfc_tsextract'</description>
+	</meta>
+	<data type="array">
+		<languageKey index="default" type="array">
+			<label index="extractTask.name">TypoScript Extract</label>
+			<label index="extractTask.description">Extracts typoscript from db records into files.</label>
+			<label index="extractTask.startpid">Page to start with.</label>
+		</languageKey>
+		<languageKey index="de" type="array">
+			<label index="extractTask.name">TypoScript Extract</label>
+			<label index="extractTask.description">Extrahiert TypoScript von Datenbank Datensätze in Dateien.</label>
+			<label index="extractTask.startpid">Anfangsseite.</label>
+		</languageKey>
+	</data>
+</T3locallang>
