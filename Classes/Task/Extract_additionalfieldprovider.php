@@ -73,7 +73,7 @@ class tx_mfctsextract_task_extract_additionalfieldprovider implements tx_schedul
 
 		return $additionalFields;
 	}
-	
+
 	/**
 	 * @param	array
 	 * @return	string
@@ -92,7 +92,8 @@ class tx_mfctsextract_task_extract_additionalfieldprovider implements tx_schedul
 		while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($result)) {
 			$ModTSconfig = t3lib_BEfunc::getModTSconfig($row['uid'], 'mod.web_txmfctsextract');
 
-			if ($ModTSconfig['properties']['start']) {
+			if ($ModTSconfig['properties']['start'] && strpos($row['TSconfig'], 'web_txmfctsextract') !== FALSE &&
+					strpos($row['TSconfig'], 'start') !== FALSE) {
 				if (in_array($row['uid'], (array) $selectedOptions)) {
 					$selected = ' selected="selected"';
 				} else {
