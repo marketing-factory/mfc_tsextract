@@ -293,6 +293,7 @@ class tx_mfctsextract_service_extractor {
 			'[PIDinRootline = ' . $page['uid'] . ']' . "\n" .
 			'<INCLUDE_TYPOSCRIPT:source="FILE:' . $this->relPath . $filename . '">' . "\n" . '[end]' . "\n";
 
+		fseek($fileHandle, 0, SEEK_END);
 		fwrite($fileHandle, $content, strlen($content));
 	}
 
@@ -362,7 +363,7 @@ class tx_mfctsextract_service_extractor {
 				$string = 'Template "' . $template['title'] . '" on page "' . $page['title'] . '" includes following statics: ' .
 					"\n" . $template['include_static_file'] . "\n\n";
 
-				fputs($fileHandle, $string, strlen($string));
+				fwrite($fileHandle, $string, strlen($string));
 				fclose($fileHandle);
 			}
 		}
@@ -374,8 +375,7 @@ class tx_mfctsextract_service_extractor {
 		);
 
 		$this->tceMain->start($data, array());
-		// @todo activate me
-		//$this->tceMain->process_datamap();
+		$this->tceMain->process_datamap();
 	}
 }
 
