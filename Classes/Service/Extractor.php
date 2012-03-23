@@ -81,6 +81,11 @@ class tx_mfctsextract_service_extractor {
 	 */
 	protected $masterConstants;
 
+	/**
+	 * @var array
+	 */
+	protected $alreadyExported = array();
+
 
 	/**
 	 * @param integer $startPid
@@ -245,8 +250,12 @@ class tx_mfctsextract_service_extractor {
 	 * @return void
 	 */
 	protected function writeTemplateSetupAndConstants($template, $page) {
-		$this->writeSetupToFile($template, $page);
-		$this->writeConstantsToFile($template, $page);
+		if (!in_array($template['uid'], $this->alreadyExported)) {
+			$this->alreadyExported[] = $template['uid'];
+
+			$this->writeSetupToFile($template, $page);
+			$this->writeConstantsToFile($template, $page);
+		}
 	}
 
 	/**
@@ -288,8 +297,9 @@ class tx_mfctsextract_service_extractor {
 	protected function addInclude($fileHandle, $filename, $template, $page) {
 		$content = "\n\n" . '# Include typoscript [' . $template['uid'] . '] ' . $template['title'] . ' on page [' .
 			$page['uid'] . '] ' . $page['title'] . "\n" .
-			'[PIDinRootline = ' . $page['uid'] . ']' . "\n" .
-			'<INCLUDE_TYPOSCRIPT:source="FILE:' . $this->relPath . $filename . '">' . "\n" . '[end]' . "\n";
+			'[PIDinRootline = ' . $page['uid'] . ']'. "\n" .
+			'<INCLUDE_TYPOSCRIPT:source="FILE:' . $this->relPath . $filename . '">'. "\n" .
+			'[end]' . "\n";
 
 		fseek($fileHandle, 0, SEEK_END);
 		fwrite($fileHandle, $content, strlen($content));
