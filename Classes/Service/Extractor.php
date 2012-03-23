@@ -362,7 +362,7 @@ class tx_mfctsextract_service_extractor {
 			$hide = 1;
 		} else {
 			if ($fileHandle = fopen($this->path . '_includeStaticWarnlist.txt', 'a+')) {
-				$string = 'Template "' . $template['title'] . '" on page "' . $page['title'] . ' (' . $page['uid'] . ')" includes following statics: ' .
+				$string = 'Template "' . $template['title'] . ' (' . $template['uid'] . ')" on page "' . $page['title'] . ' (' . $page['uid'] . ')" includes following statics: ' .
 					"\n" . $template['include_static_file'] . "\n\n";
 
 				fwrite($fileHandle, $string, strlen($string));
