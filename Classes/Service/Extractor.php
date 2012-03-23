@@ -99,7 +99,12 @@ class tx_mfctsextract_service_extractor {
 		$this->instantiateTCEmain();
 
 		if ($this->openMasterTypoScriptFile()) {
-			$this->runRecursive($this->startPid);
+			$page = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+				'pid, uid, title',
+				'pages',
+				'deleted = 0 AND uid = ' . $this->startPid
+			);
+			$this->runRecursive(current($page));
 			$this->closeMasterTypoScriptFile();
 		}
 	}
@@ -111,15 +116,15 @@ class tx_mfctsextract_service_extractor {
 	protected function fetchPageTypoScriptConfig() {
 		$this->pageTypoScriptConfig = t3lib_BEfunc::getModTSconfig($this->startPid, 'mod.web_txmfctsextract');
 
-		if (!isset($this->pageTypoScriptConfig['path']) || $this->pageTypoScriptConfig['path'] == '') {
-			$this->pageTypoScriptConfig['path'] = $this->defaultExtractPath;
+		if (!isset($this->pageTypoScriptConfig['properties']['path']) || $this->pageTypoScriptConfig['properties']['path'] == '') {
+			$this->pageTypoScriptConfig['properties']['path'] = $this->defaultExtractPath;
 		}
 
-		if (!isset($this->pageTypoScriptConfig['filenamepattern']) || $this->pageTypoScriptConfig['filenamepattern'] == '') {
-			$this->pageTypoScriptConfig['filenamepattern'] = $this->defaultFilenamePattern;
+		if (!isset($this->pageTypoScriptConfig['filenamepattern']) || $this->pageTypoScriptConfig['properties']['filenamepattern'] == '') {
+			$this->pageTypoScriptConfig['properties']['filenamepattern'] = $this->defaultFilenamePattern;
 		}
-		$this->path = t3lib_div::getFileAbsFileName($this->pageTypoScriptConfig['path'], FALSE);
-		$this->relPath = str_replace(PATH_site, '', t3lib_div::getFileAbsFileName($this->pageTypoScriptConfig['path']));
+		$this->path = t3lib_div::getFileAbsFileName($this->pageTypoScriptConfig['properties']['path'], FALSE);
+		$this->relPath = str_replace(PATH_site, '', t3lib_div::getFileAbsFileName($this->pageTypoScriptConfig['properties']['path']));
 	}
 
 	/**
@@ -184,19 +189,13 @@ class tx_mfctsextract_service_extractor {
 	 * @param integer|array $parent
 	 * @return void
 	 */
-	protected function runRecursive($parent) {
-			// extract ts into files and add include state to master files
-		if (is_array($parent)) {
-			$this->workOnTypoScriptRecordsOfPage($parent);
-			$pageId = $parent['uid'];
-		} else {
-			$pageId = $parent;
-		}
+	protected function runRecursive($parentPage) {
+		$this->workOnTypoScriptRecordsOfPage($parentPage);
 
 		$pages = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 			'pid, uid, title',
 			'pages',
-			'deleted = 0 AND pid = ' . $pageId
+			'deleted = 0 AND pid = ' . $parentPage['uid']
 		);
 
 		while ($page = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($pages)) {
@@ -211,7 +210,7 @@ class tx_mfctsextract_service_extractor {
 		$templates = $this->fetchTemplates('pid = ' . (int) $page['uid']);
 
 		foreach ($templates as $template) {
-			$this->fetchConnectedTemplates($template['baseOn'], $page);
+			$this->fetchConnectedTemplates($template['basedOn'], $page);
 			$this->writeTemplateSetupAndConstants($template, $page);
 
 			$this->hideTemplate($template, $page);
@@ -231,8 +230,7 @@ class tx_mfctsextract_service_extractor {
 
 			foreach ($uids as $uid) {
 				$template = $templates[$uid];
-
-				$this->fetchConnectedTemplates($template['baseOn'], $page);
+				$this->fetchConnectedTemplates($template['basedOn'], $page);
 				$this->writeTemplateSetupAndConstants($template, $page);
 
 				$this->hideTemplate($template, $page);
@@ -325,7 +323,7 @@ class tx_mfctsextract_service_extractor {
 		return str_replace(
 			array('{type}', '{pid}', '{uid}', '{title}'),
 			array($type, $template['pid'], $template['uid'], $title),
-			$this->pageTypoScriptConfig['filenamepattern']
+			$this->pageTypoScriptConfig['properties']['filenamepattern']
 		);
 	}
 
@@ -344,7 +342,11 @@ class tx_mfctsextract_service_extractor {
 			config, constants,
 			include_static_file, basedOn',
 			'sys_template',
-			'hidden = 0 AND deleted = 0 AND ' . $andWhere
+			'hidden = 0 AND deleted = 0 AND ' . $andWhere,
+			'',
+			'sorting',
+			'',
+			'uid'
 		);
 	}
 
@@ -356,11 +358,11 @@ class tx_mfctsextract_service_extractor {
 	protected function hideTemplate($template, $page) {
 		$hide = 0;
 
-		if ($template['include_static_file'] == '') {
+		if ($template['include_static_file'] == '' && $template['clear'] == 0) {
 			$hide = 1;
 		} else {
 			if ($fileHandle = fopen($this->path . '_includeStaticWarnlist.txt', 'a+')) {
-				$string = 'Template "' . $template['title'] . '" on page "' . $page['title'] . '" includes following statics: ' .
+				$string = 'Template "' . $template['title'] . '" on page "' . $page['title'] . ' (' . $page['uid'] . ')" includes following statics: ' .
 					"\n" . $template['include_static_file'] . "\n\n";
 
 				fwrite($fileHandle, $string, strlen($string));
