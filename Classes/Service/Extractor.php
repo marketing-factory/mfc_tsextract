@@ -32,6 +32,11 @@ class tx_mfctsextract_service_extractor {
 	protected $startPid = -1;
 
 	/**
+	 * @var integer
+	 */
+	protected $dryRun = 0;
+
+	/**
 	 * @var t3lib_TCEmain
 	 */
 	protected $tceMain;
@@ -128,6 +133,8 @@ class tx_mfctsextract_service_extractor {
 		if (!isset($this->pageTypoScriptConfig['filenamepattern']) || $this->pageTypoScriptConfig['properties']['filenamepattern'] == '') {
 			$this->pageTypoScriptConfig['properties']['filenamepattern'] = $this->defaultFilenamePattern;
 		}
+
+		$this->dryRun = (int) $this->pageTypoScriptConfig['properties']['dryRun'];
 		$this->path = t3lib_div::getFileAbsFileName($this->pageTypoScriptConfig['properties']['path'], FALSE);
 		$this->relPath = str_replace(PATH_site, '', t3lib_div::getFileAbsFileName($this->pageTypoScriptConfig['properties']['path']));
 	}
@@ -381,10 +388,12 @@ class tx_mfctsextract_service_extractor {
 		}
 
 		$data = array();
-		$data['sys_template'][$template['uid']] = array(
-			'tstamp' => $GLOBALS['EXEC_TIME'],
-			'hidden' => $hide,
-		);
+		if (!$this->dryRun) {
+			$data['sys_template'][$template['uid']] = array(
+				'tstamp' => $GLOBALS['EXEC_TIME'],
+				'hidden' => $hide,
+			);
+		}
 
 		$this->tceMain->start($data, array());
 		$this->tceMain->process_datamap();
