@@ -23,7 +23,7 @@
  ***************************************************************/
 
 /**
- * @author Sebastian Fischer <sf@marketing-factory.de>
+ * Class tx_mfctsextract_service_extractor
  */
 class tx_mfctsextract_service_extractor {
 	/**
@@ -93,6 +93,8 @@ class tx_mfctsextract_service_extractor {
 
 
 	/**
+	 * Setter
+	 *
 	 * @param integer $startPid
 	 * @return tx_mfctsextract_service_extractor
 	 */
@@ -102,6 +104,8 @@ class tx_mfctsextract_service_extractor {
 	}
 
 	/**
+	 * Extract typoscript
+	 *
 	 * @return void
 	 */
 	public function extractTypoScript() {
