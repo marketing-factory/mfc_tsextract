@@ -2,7 +2,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2011 Sebastian Fischer <sf@marketing-factory.de>
+ *  (c) 2013 Sebastian Fischer <typo3@marketing-factory.de>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -110,10 +110,13 @@ class tx_mfctsextract_service_extractor {
 	 */
 	public function extractTypoScript() {
 		$this->fetchPageTypoScriptConfig();
-		$this->instantiateTCEmain();
+		$this->instantiateTceMain();
 
 		if ($this->openMasterTypoScriptFile()) {
-			$page = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+			/** @var t3lib_db $database */
+			$database = $GLOBALS['TYPO3_DB'];
+
+			$page = $database->exec_SELECTgetRows(
 				'pid, uid, title',
 				'pages',
 				'deleted = 0 AND uid = ' . $this->startPid
@@ -125,6 +128,8 @@ class tx_mfctsextract_service_extractor {
 
 
 	/**
+	 * Fetch page typoscript config
+	 *
 	 * @return void
 	 */
 	protected function fetchPageTypoScriptConfig() {
@@ -144,13 +149,18 @@ class tx_mfctsextract_service_extractor {
 	}
 
 	/**
+	 * Instantiate tcemain object
+	 *
 	 * @return void
 	 */
-	protected function instantiateTCEmain() {
+	protected function instantiateTceMain() {
 		$this->tceMain = t3lib_div::makeInstance('t3lib_TCEmain');
 	}
 
 	/**
+	 * Open master typoscript file
+	 *
+	 * @throws Exception
 	 * @return boolean
 	 */
 	protected function openMasterTypoScriptFile() {
@@ -169,13 +179,16 @@ class tx_mfctsextract_service_extractor {
 					fwrite($this->masterConstants, $startMessage);
 
 					$result = TRUE;
-			} catch (Exception $e) { }
+			} catch (Exception $e) {
+			}
 		}
 
 		return $result;
 	}
 
 	/**
+	 * Close master typoscript file
+	 *
 	 * @return void
 	 */
 	protected function closeMasterTypoScriptFile() {
@@ -189,6 +202,7 @@ class tx_mfctsextract_service_extractor {
 			if (file_exists($this->path . '_includeStaticWarnlist.txt')) {
 				t3lib_div::fixPermissions($this->path . '_includeStaticWarnlist.txt');
 
+				/** @var t3lib_FlashMessage $message */
 				$message = t3lib_div::makeInstance(
 					't3lib_FlashMessage',
 					'Some include static files were found so please look into ' . $this->path . '_includeStaticWarnlist.txt',
@@ -197,30 +211,39 @@ class tx_mfctsextract_service_extractor {
 				);
 				t3lib_FlashMessageQueue::addMessage($message);
 			}
-		} catch (Exception $e) { }
+		} catch (Exception $e) {
+		}
 	}
 
 
 	/**
-	 * @param integer|array $parent
+	 * Run recursive through typoscript records
+	 *
+	 * @param integer|array $parentPage
 	 * @return void
 	 */
 	protected function runRecursive($parentPage) {
 		$this->workOnTypoScriptRecordsOfPage($parentPage);
 
-		$pages = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+		/** @var t3lib_db $database */
+		$database = $GLOBALS['TYPO3_DB'];
+
+		$pages = $database->exec_SELECTquery(
 			'pid, uid, title',
 			'pages',
 			'deleted = 0 AND pid = ' . $parentPage['uid']
 		);
 
-		while ($page = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($pages)) {
+		while (($page = $database->sql_fetch_assoc($pages))) {
 			$this->runRecursive($page);
 		}
 	}
 
 	/**
+	 * Work on typscript records of page
+	 *
 	 * @param array $page
+	 * @return void
 	 */
 	protected function workOnTypoScriptRecordsOfPage($page) {
 		$templates = $this->fetchTemplates('pid = ' . (int) $page['uid']);
@@ -234,6 +257,8 @@ class tx_mfctsextract_service_extractor {
 	}
 
 	/**
+	 * Fetch connected templates
+	 *
 	 * @param string $uidList
 	 * @param array $page
 	 * @return void
@@ -256,6 +281,8 @@ class tx_mfctsextract_service_extractor {
 
 
 	/**
+	 * Write template setup and constants
+	 *
 	 * @param array $template
 	 * @param array $page
 	 * @return void
@@ -270,6 +297,8 @@ class tx_mfctsextract_service_extractor {
 	}
 
 	/**
+	 * Write setup to file
+	 *
 	 * @param array $template
 	 * @param array $page
 	 * @return void
@@ -285,6 +314,8 @@ class tx_mfctsextract_service_extractor {
 	}
 
 	/**
+	 * Write constants to file
+	 *
 	 * @param array $template
 	 * @param array $page
 	 * @return void
@@ -300,40 +331,49 @@ class tx_mfctsextract_service_extractor {
 	}
 
 	/**
+	 * Add includes
+	 *
 	 * @param resource $fileHandle
 	 * @param string $filename
 	 * @param array $template
 	 * @param array $page
+	 * @return void
 	 */
 	protected function addInclude($fileHandle, $filename, $template, $page) {
 		$content = "\n\n" . '# Include typoscript [' . $template['uid'] . '] ' . $template['title'] . ' on page [' .
-			$page['uid'] . '] ' . $page['title'] . "\n" .
-			'[PIDinRootline = ' . $page['uid'] . ']'. "\n" .
-			'<INCLUDE_TYPOSCRIPT:source="FILE:' . $this->relPath . $filename . '">'. "\n" .
-			'[end]' . "\n";
+			$page['uid'] . '] ' . $page['title'] . LF .
+			'[PIDinRootline = ' . $page['uid'] . ']' . LF .
+			'<INCLUDE_TYPOSCRIPT:source="FILE:' . $this->relPath . $filename . '">' . LF .
+			'[end]' . LF;
 
 		fseek($fileHandle, 0, SEEK_END);
 		fwrite($fileHandle, $content, strlen($content));
 	}
 
 	/**
+	 * Write content to file
+	 *
 	 * @param string $filename
 	 * @param string $content
 	 * @param array $page
+	 * @return void
 	 */
 	protected function writeToFile($filename, $content, $page) {
 		$content =
-			'# Extracted on ' . date('Y-m-d', $GLOBALS['EXEC_TIME']) . "\n" .
-			'# was on page: [' . $page['uid'] . '] ' . $page['title'] . "\n\n" . $content;
+			'# Extracted on ' . date('Y-m-d', $GLOBALS['EXEC_TIME']) . LF .
+			'# was on page: [' . $page['uid'] . '] ' . $page['title'] . LF . LF . $content;
 
 		try {
 			file_put_contents($this->path . $filename, $content);
 
 			t3lib_div::fixPermissions($this->path . $filename);
-		} catch (Exception $e) { }
+		} catch (Exception $e) {
+		}
 	}
 
 	/**
+	 * Get filename
+	 *
 	 * @param string $type
 	 * @param array $template
 	 * @return string
@@ -350,15 +390,20 @@ class tx_mfctsextract_service_extractor {
 
 
 	/**
+	 * Fetch template records
+	 *
 	 * @param string $andWhere
 	 * @return array
 	 */
 	protected function fetchTemplates($andWhere) {
-			// config is setup field
-			// constants is constants field
-			// basedOn are included sys_template records as comma separated id list
-			// include_static_file typoscript files from extensions
-		return $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+		// config is setup field
+		// constants is constants field
+		// basedOn are included sys_template records as comma separated id list
+		// include_static_file typoscript files from extensions
+		/** @var t3lib_db $database */
+		$database = $GLOBALS['TYPO3_DB'];
+
+		return $database->exec_SELECTgetRows(
 			'uid, pid, title,
 			config, constants,
 			include_static_file, basedOn',
@@ -372,9 +417,11 @@ class tx_mfctsextract_service_extractor {
 	}
 
 	/**
+	 * Hide template record
+	 *
 	 * @param array $template
 	 * @param array $page
-	 * @return integer
+	 * @return void
 	 */
 	protected function hideTemplate($template, $page) {
 		$hide = 0;
@@ -382,9 +429,9 @@ class tx_mfctsextract_service_extractor {
 		if ($template['include_static_file'] == '' && $template['clear'] == 0) {
 			$hide = 1;
 		} else {
-			if ($fileHandle = fopen($this->path . '_includeStaticWarnlist.txt', 'a+')) {
-				$string = 'Template "' . $template['title'] . ' (' . $template['uid'] . ')" on page "' . $page['title'] . ' (' . $page['uid'] . ')" includes following statics: ' .
-					"\n" . $template['include_static_file'] . "\n\n";
+			if (($fileHandle = fopen($this->path . '_includeStaticWarnlist.txt', 'a+'))) {
+				$string = 'Template "' . $template['title'] . ' (' . $template['uid'] . ')" on page "' . $page['title'] . ' (' .
+					$page['uid'] . ')" includes following statics: ' . LF . $template['include_static_file'] . LF . LF;
 
 				fwrite($fileHandle, $string, strlen($string));
 				fclose($fileHandle);

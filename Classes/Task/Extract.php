@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Sebastian Fischer <sebastian.fischer@e-netconsulting.com>
+*  (c) 2013 Sebastian Fischer <typo3@marketing-factory.de>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -23,11 +23,7 @@
 ***************************************************************/
 
 /**
- *
- * @author		Sebastian Fischer <sebastian.fischer@e-netconsulting.com>
- * @package		TYPO3
- * @subpackage	enetrssimporter
- *
+ * Class tx_mfctsextract_task_extract
  */
 class tx_mfctsextract_task_extract extends tx_scheduler_Task {
 	/**
@@ -58,7 +54,8 @@ class tx_mfctsextract_task_extract extends tx_scheduler_Task {
 }
 
 if (defined('TYPO3_MODE') && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/mfc_tsextract/Classes/Service/Extractor.php']) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/mfc_tsextract/Classes/Service/Extractor.php']);
+	/** @noinspection PhpIncludeInspection */
+	require_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/mfc_tsextract/Classes/Service/Extractor.php']);
 }
 
 ?>
