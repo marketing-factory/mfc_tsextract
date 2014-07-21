@@ -139,7 +139,10 @@ class tx_mfctsextract_service_extractor {
 			$this->pageTypoScriptConfig['properties']['path'] = $this->defaultExtractPath;
 		}
 
-		if (!isset($this->pageTypoScriptConfig['filenamepattern']) || $this->pageTypoScriptConfig['properties']['filenamepattern'] == '') {
+		if (
+			!isset($this->pageTypoScriptConfig['filenamepattern']) ||
+			$this->pageTypoScriptConfig['properties']['filenamepattern'] == ''
+		) {
 			$this->pageTypoScriptConfig['properties']['filenamepattern'] = $this->defaultFilenamePattern;
 		}
 
@@ -173,7 +176,8 @@ class tx_mfctsextract_service_extractor {
 					$this->masterSetup = fopen($this->path . $this->masterSetupFile, 'a+');
 					$this->masterConstants = fopen($this->path . $this->masterConstantsFile, 'a+');
 
-					$startMessage = "\n\n\n# Extraction on " . date('Y-m-d', $GLOBALS['EXEC_TIME']) . "\n########################################\n";
+					$startMessage = "\n\n\n# Extraction on " . date('Y-m-d', $GLOBALS['EXEC_TIME']) .
+						"\n########################################\n";
 
 					fwrite($this->masterSetup, $startMessage);
 					fwrite($this->masterConstants, $startMessage);
@@ -450,5 +454,3 @@ class tx_mfctsextract_service_extractor {
 		$this->tceMain->process_datamap();
 	}
 }
-
-?>
