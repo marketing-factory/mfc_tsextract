@@ -1,5 +1,5 @@
 {
-	"name": "mfc/mfc_tsextract",
+	"name": "mfc/mfc-tsextract",
 	"description": "Extracting typoscript from db records to files",
 	"type": "typo3-cms-extension",
 	"support" : {
