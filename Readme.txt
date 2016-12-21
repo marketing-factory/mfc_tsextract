@@ -8,4 +8,4 @@ Typoscript extrahieren:
 5. master_setup.ts und master_constants öffnen und "Shortcut"-Templates Inkludierung entfernen und eventuell doppelte Script am Ende entfernen
 6. setup_"shortcut".ts constats_"shortcut".ts bearbeiten und "ext"-Templates aus den Master Dateien verlagern
 7. master und shortcut Templates in die jeweiligen Datenbank Templates einbinden
-8. ID Liste der NICHT auszublenden Typoscript Datensätze erfassen und Query für die Technik erstellen um alle anderen Datensätze auszublenden
+8. ID Liste der NICHT auszublenden Typoscript Datensätze erfassen und Query für die Technik erstellen um alle anderen Datensätze auszublenden (update sys_template set hidden = 1 where uid not in (UID1, UID2,...);)
