@@ -1,0 +1,5 @@
+{
+  "name": "mfc/mfc_env",
+  "description": "Extracting typoscript from db records to files",
+  "type": "typo3-cms-extension"
+}
