@@ -6,5 +6,5 @@
 		"issues" : "https://github.com/marketing-factory/mfc_tsextract/issues"
 	},
 	"homepage": "https://www.marketing-factory.de/",
-	"license": ["GPL-2.0+"],
+	"license": ["GPL-2.0+"]
 }
