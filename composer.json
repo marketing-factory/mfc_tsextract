@@ -1,7 +1,7 @@
 {
-  "name": "mfc/mfc_tsextract",
-  "description": "Extracting typoscript from db records to files",
-  "type": "typo3-cms-extension",
+	"name": "mfc/mfc_tsextract",
+	"description": "Extracting typoscript from db records to files",
+	"type": "typo3-cms-extension",
 	"support" : {
 		"issues" : "https://github.com/marketing-factory/mfc_tsextract/issues"
 	},
